@@ -1,9 +1,11 @@
-from tensorflow import keras
+from train.sudokuNet import sudokuNet
 
-from utils.load_data import *
 
 def main():
-    load_data()
+    sudokuSolverModel = sudokuNet()
+    sudokuSolverModel.train()
+    sudokuSolverModel.load_model("output/20241109-150345.keras")
+
 
 if __name__ == "__main__":
     main()
