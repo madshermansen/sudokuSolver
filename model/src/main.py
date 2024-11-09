@@ -1,12 +1,9 @@
 from tensorflow import keras
 
+from utils.load_data import *
 
 def main():
-    print("Hello World!")
-    print("Loading MNIST dataset...")
-    keras.datasets.mnist.load_data()
-    print(keras.__version__)
-
+    load_data()
 
 if __name__ == "__main__":
     main()
