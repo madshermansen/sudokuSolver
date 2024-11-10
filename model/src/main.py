@@ -8,13 +8,14 @@ def main():
     #sudokuSolverModel.train(epochs=25, batch_size=128)
 
     # loop through predict folder
-    folder_path = 'data/predict/'
+    folder_path = 'data/testSet/'
 
     for filename in os.listdir(folder_path):
         print(f"Predicting {filename}")
         print(sudokuSolverModel.predict(folder_path + filename))
 
     # Plot the training history
+    sudokuSolverModel.evaluate()
 
 if __name__ == "__main__":
     main()

@@ -57,6 +57,20 @@ class sudokuNet:
             metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
         )
 
+        ds_train, ds_test = self.process_data(batch_size)
+
+        # Train the model
+        self.model.fit(
+            ds_train,
+            epochs=epochs,
+            validation_data=ds_test,
+            callbacks=[early_stopping]
+        )
+
+        self.save_model()
+        self.save_plot()
+
+    def process_data(self, batch_size=128):
         # Prepare the data
         ds_train = self.ds_train.map(
             self.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
@@ -72,27 +86,32 @@ class sudokuNet:
         ds_test = ds_test.cache()
         ds_test = ds_test.prefetch(tf.data.AUTOTUNE)
 
-        # Train the model
-        self.model.fit(
-            ds_train,
-            epochs=epochs,
-            validation_data=ds_test,
-            callbacks=[early_stopping]
-        )
+        return ds_train, ds_test
+    
+    def preprocess_image(self, image_path):
 
-        self.save_model()
-        self.save_plot()
+        image = tf.keras.utils.load_img(image_path, target_size=(28, 28), color_mode='grayscale')  # adjust size and color mode as needed
+
+        # Convert to array and normalize pixel values
+        image = tf.keras.utils.img_to_array(image)
+        image = image / 255.0  # Normalize to [0, 1] range
+
+        # Expand dimensions to match model input shape
+        image = np.expand_dims(image, axis=0)
+
+        # save the image
+        file_name = 'output/processedImages/' + os.path.basename(image_path)
+        plt.imsave(file_name, image[0, :, :, 0], cmap='gray')
+
+        return image
 
     # Evaluation related
-
     def predict(self, image_path):
         if self.model is None:
             print("No model to predict!")
             return
         
-        image = tf.keras.utils.load_img(image_path, target_size=(28, 28), color_mode='grayscale')  # adjust size and color mode as needed
-        image = tf.keras.utils.img_to_array(image)
-        image = np.expand_dims(image, axis=0)
+        image = self.preprocess_image(image_path)
 
         return np.argmax(self.model.predict(image))
     
@@ -100,8 +119,9 @@ class sudokuNet:
         if self.model is None:
             print("No model to evaluate!")
             return
-        print("Evaluating...")
-        self.model.evaluate(self.ds_test)
+        
+        ds_train, ds_test = self.process_data()
+        self.model.evaluate(ds_test)
 
     # data helper functions 
     
