@@ -3,6 +3,8 @@ from utils.load_data import load_data
 import datetime
 import pickle
 import matplotlib.pyplot as plt
+import numpy as np
+import os
 
 class sudokuNet:
 
@@ -83,11 +85,16 @@ class sudokuNet:
 
     # Evaluation related
 
-    def predict(self, image):
+    def predict(self, image_path):
         if self.model is None:
             print("No model to predict!")
             return
-        return self.model.predict(image)
+        
+        image = tf.keras.utils.load_img(image_path, target_size=(28, 28), color_mode='grayscale')  # adjust size and color mode as needed
+        image = tf.keras.utils.img_to_array(image)
+        image = np.expand_dims(image, axis=0)
+
+        return np.argmax(self.model.predict(image))
     
     def evaluate(self):
         if self.model is None:
