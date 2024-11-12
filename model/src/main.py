@@ -14,7 +14,7 @@ def main():
 
     for filename in os.listdir(folder_path):
         print(f"Predicting {filename}")
-        print(sudokuSolverModel.predict(folder_path + filename))
+        prediction = sudokuSolverModel.predict(folder_path + filename)
 
     # Plot the training history
     sudokuSolverModel.evaluate()

@@ -43,10 +43,11 @@ class sudokuNet:
 
         # Create the model with Input layer instead of input_shape
         self.model = tf.keras.Sequential([
-
-
             # Input layer specifying the input shape
             layers.Input(shape=[28, 28, 1]),  # Input layer
+
+            # data augmentation
+            layers.RandomRotation(fill_mode='constant', fill_value=0.0, factor=0.3),
 
             # First Convolutional Block (3 layers of Conv2D with 64 filters)
             layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
@@ -55,6 +56,8 @@ class sudokuNet:
             layers.MaxPool2D(),
             layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
             layers.MaxPool2D(),
+
+            # S
 
             # Head
             layers.Flatten(),
@@ -129,7 +132,7 @@ class sudokuNet:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # Apply Gaussian blur
-        blurred = cv2.GaussianBlur(gray, (7, 7), 1)
+        blurred = cv2.GaussianBlur(gray, (7, 7), 3)
 
         # Apply adaptive thresholding
         thresh = cv2.adaptiveThreshold(blurred, 255,
@@ -138,6 +141,7 @@ class sudokuNet:
         image = cv2.bitwise_not(thresh)
 
         # Normalize pixel values and expand dimensions for model input
+        image = cv2.resize(image, (28, 28))
         image = self.normalize_img(np.array(image), 0)[0]
         image = np.expand_dims(image, axis=0)
 
@@ -148,14 +152,21 @@ class sudokuNet:
         return image
 
     # Evaluation related
-    def predict(self, image_path):
+    def predict(self, image_path) -> None:
         if self.model is None:
             print("No model to predict!")
             return
         
         image = self.preprocess_image(image_path)
 
-        return np.argmax(self.model.predict(image))
+        prediction_Vector = self.model.predict(image)
+
+        # convert prediction vector to string with argmax and percentage confidence
+        top1_prediction = str(np.argmax(prediction_Vector)) + " (" + str(round(np.max(prediction_Vector) * 100, 2)) + "%)"
+        top2_prediction = str(np.argsort(prediction_Vector)[0][-2]) + " (" + str(round(np.sort(prediction_Vector)[0][-2] * 100, 2)) + "%)"
+        top3_prediction = str(np.argsort(prediction_Vector)[0][-3]) + " (" + str(round(np.sort(prediction_Vector)[0][-3] * 100, 2)) + "%)"
+
+        print(f"1: {top1_prediction}\n2: {top2_prediction}\n3: {top3_prediction}")
     
     def evaluate(self):
         if self.model is None:
