@@ -4,11 +4,11 @@ import os
 
 def main():
     sudokuSolverModel = sudokuNet()
-    sudokuSolverModel.load_model('output/model/1109-162626-epochs25.keras')
-    #sudokuSolverModel.train(epochs=25, batch_size=128)
+    sudokuSolverModel.load_model('output/model/1110-191428-epochs3.keras')
+    # sudokuSolverModel.train(epochs=3, batch_size=128)
 
     # loop through predict folder
-    folder_path = 'data/testSet/'
+    folder_path = 'data/predict/'
 
     for filename in os.listdir(folder_path):
         print(f"Predicting {filename}")

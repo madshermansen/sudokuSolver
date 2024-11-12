@@ -1,4 +1,6 @@
 import tensorflow as tf
+from tensorflow import keras
+from keras import layers
 from utils.load_data import load_data
 import datetime
 import pickle
@@ -42,21 +44,29 @@ class sudokuNet:
             restore_best_weights=True,
         )
 
-        # Create the model
-        self.model = tf.keras.models.Sequential([
-            tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dense(10, activation='softmax')
+        # Create the model with Input layer instead of input_shape
+        self.model = tf.keras.Sequential([
+            # Input layer specifying the input shape
+            layers.Input(shape=[28, 28, 1]),  # Input layer
+
+            # First Convolutional Block (3 layers of Conv2D with 64 filters)
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.MaxPool2D(),
+
+            # Classifier Head
+            layers.Flatten(),
+            layers.Dense(units=10, activation="softmax"),
         ])
 
         self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(0.001),
-            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+            optimizer=tf.keras.optimizers.Adam(epsilon=0.01),
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy']
         )
 
+        # Assuming you have the process_data function for loading data
         ds_train, ds_test = self.process_data(batch_size)
 
         # Train the model
@@ -69,6 +79,7 @@ class sudokuNet:
 
         self.save_model()
         self.save_plot()
+
 
     def process_data(self, batch_size=128):
         # Prepare the data
@@ -89,19 +100,17 @@ class sudokuNet:
         return ds_train, ds_test
     
     def preprocess_image(self, image_path):
-
         image = tf.keras.utils.load_img(image_path, target_size=(28, 28), color_mode='grayscale')  # adjust size and color mode as needed
 
         # Convert to array and normalize pixel values
-        image = tf.keras.utils.img_to_array(image)
-        image = image / 255.0  # Normalize to [0, 1] range
+        image = self.normalize_img(np.array(image), 0)[0]
 
         # Expand dimensions to match model input shape
         image = np.expand_dims(image, axis=0)
 
         # save the image
         file_name = 'output/processedImages/' + os.path.basename(image_path)
-        plt.imsave(file_name, image[0, :, :, 0], cmap='gray')
+        plt.imsave(file_name, image[0], cmap='gray')
 
         return image
 
