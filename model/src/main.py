@@ -7,14 +7,14 @@ def main():
     modelURL = '1112-135907-epochs10.keras'
 
     sudokuSolverModel.load_model(f'output/model/{modelURL}')
-    # train(sudokuSolverModel)
+    train(sudokuSolverModel)
 
     # loop through predict folder
     folder_path = 'data/predict/'
 
     for filename in os.listdir(folder_path):
         print(f"Predicting {filename}")
-        prediction = sudokuSolverModel.predict(folder_path + filename)
+        sudokuSolverModel.predict(folder_path + filename)
 
     # Plot the training history
     sudokuSolverModel.evaluate()

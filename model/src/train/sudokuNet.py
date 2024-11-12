@@ -50,14 +50,18 @@ class sudokuNet:
             layers.RandomRotation(fill_mode='constant', fill_value=0.0, factor=0.3),
 
             # First Convolutional Block (3 layers of Conv2D with 64 filters)
-            layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu', padding='same'),
             layers.MaxPool2D(),
-            layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu',padding='same'),
             layers.MaxPool2D(),
-            layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu',padding='same'),
             layers.MaxPool2D(),
 
-            # S
+            # Second Convolutional Block 
+            layers.Dense(activation='relu', units=64),
+            layers.Dropout(0.3),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu',padding='same'),
+            
 
             # Head
             layers.Flatten(),
