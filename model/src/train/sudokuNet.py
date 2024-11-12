@@ -1,12 +1,16 @@
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
+
 from utils.load_data import load_data
 import datetime
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+
+import cv2
+
 
 class sudokuNet:
 
@@ -37,15 +41,10 @@ class sudokuNet:
         print("Training...")
         self.epoch = epochs
 
-        early_stopping = tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            min_delta=0.001,
-            patience=epochs // 5,
-            restore_best_weights=True,
-        )
-
         # Create the model with Input layer instead of input_shape
         self.model = tf.keras.Sequential([
+
+
             # Input layer specifying the input shape
             layers.Input(shape=[28, 28, 1]),  # Input layer
 
@@ -69,6 +68,14 @@ class sudokuNet:
         # Assuming you have the process_data function for loading data
         ds_train, ds_test = self.process_data(batch_size)
 
+        # Define early stopping callback
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            min_delta=0.001,
+            patience=epochs // 5,
+            restore_best_weights=True,
+        )
+
         # Train the model
         self.model.fit(
             ds_train,
@@ -82,6 +89,18 @@ class sudokuNet:
 
 
     def process_data(self, batch_size=128):
+
+        # create an inverted dataset
+        ds_train_inverted = self.ds_train.map(
+            lambda image, label: (1 - image, label))
+        ds_test_inverted = self.ds_test.map(
+            lambda image, label: (1 - image, label))
+
+        # combine the datasets
+
+        self.ds_train = self.ds_train.concatenate(ds_train_inverted)
+        self.ds_test = self.ds_test.concatenate(ds_test_inverted)
+
         # Prepare the data
         ds_train = self.ds_train.map(
             self.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
@@ -90,17 +109,20 @@ class sudokuNet:
         ds_train = ds_train.batch(batch_size)
         ds_train = ds_train.prefetch(tf.data.AUTOTUNE)
 
-        # Prepare the test data
         ds_test = self.ds_test.map(
             self.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
         ds_test = ds_test.batch(batch_size)
         ds_test = ds_test.cache()
         ds_test = ds_test.prefetch(tf.data.AUTOTUNE)
 
+
         return ds_train, ds_test
     
     def preprocess_image(self, image_path):
         image = tf.keras.utils.load_img(image_path, target_size=(28, 28), color_mode='grayscale')  # adjust size and color mode as needed
+
+        # invert the colors of the image
+        image = cv2.bitwise_not(np.array(image))
 
         # Convert to array and normalize pixel values
         image = self.normalize_img(np.array(image), 0)[0]
