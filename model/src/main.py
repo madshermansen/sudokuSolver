@@ -22,7 +22,7 @@ def main():
 
 def train(model):
     start = datetime.datetime.now()
-    model.train(epochs=10, batch_size=128)
+    model.train(epochs=50, batch_size=128)
     # Total time taken
     print(f"Total time taken: {datetime.datetime.now() - start}")
 
