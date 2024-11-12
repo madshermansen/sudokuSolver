@@ -50,11 +50,13 @@ class sudokuNet:
 
             # First Convolutional Block (3 layers of Conv2D with 64 filters)
             layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.MaxPool2D(),
             layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+            layers.MaxPool2D(),
             layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
             layers.MaxPool2D(),
 
-            # Classifier Head
+            # Head
             layers.Flatten(),
             layers.Dense(units=10, activation="softmax"),
         ])
@@ -90,16 +92,16 @@ class sudokuNet:
 
     def process_data(self, batch_size=128):
 
-        # create an inverted dataset
-        ds_train_inverted = self.ds_train.map(
-            lambda image, label: (1 - image, label))
-        ds_test_inverted = self.ds_test.map(
-            lambda image, label: (1 - image, label))
+        # # create an inverted dataset
+        # ds_train_inverted = self.ds_train.map(
+        #     lambda image, label: (1 - image, label))
+        # ds_test_inverted = self.ds_test.map(
+        #     lambda image, label: (1 - image, label))
 
-        # combine the datasets
+        # # combine the datasets
 
-        self.ds_train = self.ds_train.concatenate(ds_train_inverted)
-        self.ds_test = self.ds_test.concatenate(ds_test_inverted)
+        # self.ds_train = self.ds_train.concatenate(ds_train_inverted)
+        # self.ds_test = self.ds_test.concatenate(ds_test_inverted)
 
         # Prepare the data
         ds_train = self.ds_train.map(
@@ -117,20 +119,29 @@ class sudokuNet:
 
 
         return ds_train, ds_test
-    
+        
     def preprocess_image(self, image_path):
-        image = tf.keras.utils.load_img(image_path, target_size=(28, 28), color_mode='grayscale')  # adjust size and color mode as needed
+        # Load image as a PIL image, resize, and convert to grayscale
+        image = tf.keras.utils.load_img(image_path)
+        image = np.array(image)  # Convert to numpy array
 
-        # invert the colors of the image
-        image = cv2.bitwise_not(np.array(image))
+        # Convert to grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        # Convert to array and normalize pixel values
+        # Apply Gaussian blur
+        blurred = cv2.GaussianBlur(gray, (7, 7), 1)
+
+        # Apply adaptive thresholding
+        thresh = cv2.adaptiveThreshold(blurred, 255,
+                                    cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                    cv2.THRESH_BINARY, 11, 2)
+        image = cv2.bitwise_not(thresh)
+
+        # Normalize pixel values and expand dimensions for model input
         image = self.normalize_img(np.array(image), 0)[0]
-
-        # Expand dimensions to match model input shape
         image = np.expand_dims(image, axis=0)
 
-        # save the image
+        # Save the processed image
         file_name = 'output/processedImages/' + os.path.basename(image_path)
         plt.imsave(file_name, image[0], cmap='gray')
 
