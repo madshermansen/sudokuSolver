@@ -6,7 +6,7 @@ def main():
     sudokuSolverModel = sudokuNet()
     modelURL = '1112-135907-epochs10.keras'
 
-    sudokuSolverModel.load_model(f'output/model/{modelURL}')
+    # sudokuSolverModel.load_model(f'output/model/{modelURL}')
     train(sudokuSolverModel)
 
     # loop through predict folder
@@ -23,8 +23,16 @@ def main():
 def train(model):
     start = datetime.datetime.now()
     model.train(epochs=50, batch_size=128)
+
+    model.get_summary()
     # Total time taken
     print(f"Total time taken: {datetime.datetime.now() - start}")
 
 if __name__ == "__main__":
+    # check if running from model directory
+    if not(os.getcwd().split('/')[-1] == 'model'):
+        print('==' * 24, '\nPlease switch directory to model directory\n', '==' * 24, sep='')
+        exit()
+
+    # run main function
     main()
