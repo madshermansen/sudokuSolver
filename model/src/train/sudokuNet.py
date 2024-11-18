@@ -46,25 +46,19 @@ class sudokuNet:
             # Input layer specifying the input shape
             layers.Input(shape=[28, 28, 1]),  # Input layer
 
-            # data augmentation
-            layers.RandomRotation(fill_mode='constant', fill_value=0.0, factor=0.3),
-
             # First Convolutional Block (3 layers of Conv2D with 64 filters)
             layers.Conv2D(filters=64, kernel_size=3, activation='relu', padding='same'),
-            layers.MaxPool2D(),
-            layers.Conv2D(filters=64, kernel_size=3, activation='relu',padding='same'),
-            layers.MaxPool2D(),
-            layers.Conv2D(filters=64, kernel_size=3, activation='relu',padding='same'),
-            layers.MaxPool2D(),
-
-            # Second Convolutional Block 
-            layers.Dense(activation='relu', units=64),
-            layers.Dropout(0.3),
-            layers.Conv2D(filters=64, kernel_size=3, activation='relu',padding='same'),
-            
+            layers.BatchNormalization(),
+            layers.MaxPooling2D(pool_size=(2, 2)),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu', padding='same'),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D(pool_size=(2, 2)),
+            layers.Conv2D(filters=64, kernel_size=3, activation='relu', padding='same'),
+            layers.MaxPooling2D(pool_size=(2, 2)),
 
             # Head
             layers.Flatten(),
+            layers.Dropout(0.5),
             layers.Dense(units=10, activation="softmax"),
         ])
 
@@ -98,19 +92,6 @@ class sudokuNet:
 
 
     def process_data(self, batch_size=128):
-
-        # # create an inverted dataset
-        # ds_train_inverted = self.ds_train.map(
-        #     lambda image, label: (1 - image, label))
-        # ds_test_inverted = self.ds_test.map(
-        #     lambda image, label: (1 - image, label))
-
-        # # combine the datasets
-
-        # self.ds_train = self.ds_train.concatenate(ds_train_inverted)
-        # self.ds_test = self.ds_test.concatenate(ds_test_inverted)
-
-        # Prepare the data
         ds_train = self.ds_train.map(
             self.normalize_img, num_parallel_calls=tf.data.AUTOTUNE)
         ds_train = ds_train.cache()
@@ -123,7 +104,6 @@ class sudokuNet:
         ds_test = ds_test.batch(batch_size)
         ds_test = ds_test.cache()
         ds_test = ds_test.prefetch(tf.data.AUTOTUNE)
-
 
         return ds_train, ds_test
         
