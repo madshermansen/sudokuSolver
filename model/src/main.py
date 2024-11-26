@@ -1,26 +1,28 @@
 from train.sudokuNet import sudokuNet
+from server.api import run_server
 import os
 import datetime
-
 
 def main():
     sudokuSolverModel = sudokuNet()
     modelURL = '1118-150755-epochs50.keras'
 
     sudokuSolverModel.load_model(f'output/model/{modelURL}')
-    #train(sudokuSolverModel)
 
+    # run server with model
+    run_server(sudokuSolverModel)
+
+def test_predict(model):
     # loop through predict folder
     folder_path = 'data/predict/'
 
     for filename in os.listdir(folder_path):
         print(f"Predicting {filename}")
-        sudokuSolverModel.predict(folder_path + filename)
+        model.predict(folder_path + filename)
 
-    # Plot the training history
     print("/n The evvaluation of the model is:")
-    sudokuSolverModel.evaluate()
-
+    model.evaluate()
+    
 
 def train(model):
     start = datetime.datetime.now()

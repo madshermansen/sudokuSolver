@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+model = None
+
 @app.route('/api/solve', methods=['POST'])
 def solve_image():
     try:
@@ -23,11 +25,23 @@ def solve_image():
             "message": "Image received successfully",
             "filename": image_file.filename,
         }
+
+        # Use the model to make predictions
+        result = model.predict("uploaded_image.jpg")
+        print(result)
+
         return jsonify(response), 200
 
     except Exception as e:
         print("Error occurred:", str(e))
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+def run_server(model_instance=None):
+    global model
+    model = model_instance
+
+    if model is None:
+        print("Model is not provided!")
+        return
+
     app.run(debug=True, host='0.0.0.0', port=8080)
