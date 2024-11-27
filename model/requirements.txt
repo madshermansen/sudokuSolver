@@ -61,3 +61,5 @@ wheel==0.45.0
 wrapt==1.16.0
 zipp==3.20.2
 opencv-python==4.10.0.84
+flask==3.1.0
+
