@@ -11,8 +11,7 @@ export default function Camera() {
   const cameraRef = useRef<CameraView>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null); // State to store the photo URI
 
-  const serverURL =
-    "http://127.0.0.1:8080";
+  const serverURL = "http://172.27.27.46:8080";
 
   const dir = "/api/solve";
 
