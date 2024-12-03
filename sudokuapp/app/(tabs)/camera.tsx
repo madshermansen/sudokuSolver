@@ -12,7 +12,7 @@ export default function Camera() {
   const [photoUri, setPhotoUri] = useState<string | null>(null); // State to store the photo URI
 
   const serverURL =
-    "https://5647-240b-c010-492-c5d4-759f-4d14-7ab8-c711.ngrok-free.app/";
+    "http://172.20.10.9:8080/";
 
   const dir = "/api/solve";
 
