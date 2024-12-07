@@ -8,7 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-
+import random
 import cv2
 
 
@@ -107,16 +107,21 @@ class sudokuNet:
 
         return ds_train, ds_test
         
-    def preprocess_image(self, image_path):
+    def preprocess_image(self, image, image_is_path:bool):
         # Load image as a PIL image, resize, and convert to grayscale
-        image = tf.keras.utils.load_img(image_path)
+        if image_is_path:
+            image = tf.keras.utils.load_img(image)
         image = np.array(image)  # Convert to numpy array
 
         # Convert to grayscale
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        if len(image.shape) == 2:  # Already grayscale
+            gray = image
+        else:  # Convert only if needed
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         # Apply Gaussian blur
-        blurred = cv2.GaussianBlur(gray, (7, 7), 3)
+        # blurred = cv2.GaussianBlur(gray, (7, 7), 3)
+        blurred = gray
 
         # Apply adaptive thresholding
         thresh = cv2.adaptiveThreshold(blurred, 255,
@@ -130,18 +135,22 @@ class sudokuNet:
         image = np.expand_dims(image, axis=0)
 
         # Save the processed image
-        file_name = 'output/processedImages/' + os.path.basename(image_path)
-        plt.imsave(file_name, image[0], cmap='gray')
+        if image_is_path:
+            file_name = 'output/processedImages/' + os.path.basename(image)
+            plt.imsave(file_name, image[0], cmap='gray')
+        else:
+            file_name = 'output/processedImages/noeForAse' + str(random.randrange(0,1000,1)) + '.jpg'
+            plt.imsave(file_name, image[0], cmap='gray')
 
         return image
 
     # Evaluation related
-    def predict(self, image_path) -> None:
+    def predict(self, image_path, image_is_path:bool) -> int:
         if self.model is None:
             print("No model to predict!")
             return
         
-        image = self.preprocess_image(image_path)
+        image = self.preprocess_image(image_path, image_is_path)
 
         prediction_Vector = self.model.predict(image)
 
@@ -151,6 +160,7 @@ class sudokuNet:
         top3_prediction = str(np.argsort(prediction_Vector)[0][-3]) + " (" + str(round(np.sort(prediction_Vector)[0][-3] * 100, 2)) + "%)"
 
         print(f"1: {top1_prediction}\n2: {top2_prediction}\n3: {top3_prediction}")
+        return np.argmax(prediction_Vector)
     
     def evaluate(self):
         if self.model is None:

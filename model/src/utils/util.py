@@ -1,5 +1,6 @@
 from imutils.perspective import four_point_transform
 from skimage.segmentation import clear_border
+from tensorflow.keras.preprocessing.image import img_to_array
 import numpy as np
 import imutils
 import cv2
@@ -104,8 +105,11 @@ def extract_digit(cell, num:str ,debug=True):
     percentFilled = cv2.countNonZero(mask) / float(w * h)
     # if less than 3% of the mask is filled then we are looking at
     # noise and can safely ignore the contour
-    if percentFilled < 0.03:
-        return None
+    #TODO Testing without the filter for the content of the squere 
+    # if percentFilled < 0.005:
+    #     print(f"Failed through the 0.5% check")
+    #     return None
+    
     # apply the mask to the thresholded cell
     digit = cv2.bitwise_and(thresh, thresh, mask=mask)
     # check to see if we should visualize the masking step
@@ -114,3 +118,48 @@ def extract_digit(cell, num:str ,debug=True):
         cv2.imwrite(f"output/Digit{num}.jpg", digit)
     # return the digit to the calling function
     return digit
+
+def identify_image(model, image, debug=True):
+    (puzzleImage, warped) = find_puzzle(image, True)
+    # initialize our 9x9 Sudoku board
+    board = np.zeros((9, 9), dtype="int")
+    # a Sudoku puzzle is a 9x9 grid (81 individual cells), so we can
+    # infer the location of each cell by dividing the warped image
+    # into a 9x9 grid
+    stepX = warped.shape[1] // 9
+    stepY = warped.shape[0] // 9
+    # initialize a list to store the (x, y)-coordinates of each cell
+    # location
+    cellLocs = []
+    
+    # loop over the grid locations
+    for y in range(0, 9):
+        # initialize the current list of cell locations
+        row = []
+        for x in range(0, 9):
+            # compute the starting and ending (x, y)-coordinates of the
+            # current cell
+            startX = x * stepX
+            startY = y * stepY
+            endX = (x + 1) * stepX
+            endY = (y + 1) * stepY
+            # add the (x, y)-coordinates to our cell locations list
+            row.append((startX, startY, endX, endY))
+            
+            # crop the cell from the warped transform image and then
+            # extract the digit from the cell
+            cell = warped[startY:endY, startX:endX]
+            num = str(y)+str(x)
+            digit = extract_digit(cell, num, debug=True)
+            print("Checking x and y: ", num)
+            
+            # verify that the digit is not empty
+            if digit is not None:
+                print("Digit is not None, so going for the predict")
+                pred = model.predict(digit,False)
+                print(f"Predicted for y: {y} & x: {x} = {pred}")
+                board[y, x] = pred
+
+        cellLocs.append(row)
+        
+    return board
