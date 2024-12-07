@@ -116,11 +116,11 @@ export default function Camera() {
         autofocus="off"
       >
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip Camera</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Take Picture</Text>
+            <View style={styles.cameraButtonWrapper}>
+            </View>
+            <View style={styles.cameraButton}>
+            </View>
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -162,5 +162,24 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     resizeMode: "contain", // Ensure the image fits the screen
+  },
+  cameraButton: {
+    position: "absolute",
+    bottom: 0,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    margin: 4,
+    backgroundColor: "white",
+  },
+  cameraButtonWrapper: {
+    position: "absolute",
+    bottom: 0,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 2,
+    borderColor: "white",
+  
   },
 });
