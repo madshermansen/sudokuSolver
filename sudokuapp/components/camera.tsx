@@ -3,17 +3,17 @@ import { useState } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRef } from "react";
 import { Image } from "react-native";
-import * as FileSystem from "expo-file-system";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Camera() {
-  const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null); // State to store the photo URI
+  const router = useRouter();
 
   const serverURL =
-    "http://127.0.0.1:8080";
-
+    "http://172.27.31.20:8080/";
   const dir = "/api/solve";
 
   if (!permission) {
@@ -31,10 +31,6 @@ export default function Camera() {
         <Button onPress={requestPermission} title="grant permission" />
       </View>
     );
-  }
-
-  function toggleCameraFacing() {
-    setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
   async function takePicture() {
@@ -90,6 +86,11 @@ export default function Camera() {
 
       // Parse and log the server response
       const result = await response.json();
+
+      if (result.data) {
+        await AsyncStorage.setItem("solveData", JSON.stringify(result.data));
+        router.push("/solve");
+      }
       console.log("Server response:", result);
     } catch (error) {
       console.error("Error sending image:", error);
@@ -111,16 +112,16 @@ export default function Camera() {
     <View style={styles.container}>
       <CameraView
         style={styles.camera}
-        facing={facing}
+        facing={'back'}
         ref={cameraRef}
         autofocus="off"
       >
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip Camera</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Take Picture</Text>
+            <View style={styles.cameraButtonWrapper}>
+            </View>
+            <View style={styles.cameraButton}>
+            </View>
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -162,5 +163,24 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     resizeMode: "contain", // Ensure the image fits the screen
+  },
+  cameraButton: {
+    position: "absolute",
+    bottom: 0,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    margin: 4,
+    backgroundColor: "white",
+  },
+  cameraButtonWrapper: {
+    position: "absolute",
+    bottom: 0,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 2,
+    borderColor: "white",
+  
   },
 });
