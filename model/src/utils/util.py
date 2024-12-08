@@ -80,10 +80,12 @@ def extract_digit(cell, num:str ,debug=True):
     # connected borders that touch the border of the cell
     thresh = cv2.threshold(cell, 0, 255,
         cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    if debug:
+        cv2.imwrite(f"output/Cell-Thresh{num}.jpg", thresh)
     thresh = clear_border(thresh)
     # check to see if we are visualizing the cell thresholding step
     if debug:
-        cv2.imwrite("output/Cell-Thresh.jpg", thresh)
+        cv2.imwrite(f"output/Cell-Thresh-clear-border{num}.jpg", thresh)
 
 
     # find contours in the thresholded cell
@@ -92,6 +94,7 @@ def extract_digit(cell, num:str ,debug=True):
     cnts = imutils.grab_contours(cnts)
     # if no contours were found than this is an empty cell
     if len(cnts) == 0:
+        print("Return None, could not find any contours")
         return None
     # otherwise, find the largest contour in the cell and create a
     # mask for the contour
@@ -150,8 +153,8 @@ def identify_image(model, image, debug=True):
             # extract the digit from the cell
             cell = warped[startY:endY, startX:endX]
             num = str(y)+str(x)
-            digit = extract_digit(cell, num, debug=True)
             print("Checking x and y: ", num)
+            digit = extract_digit(cell, num, debug=True)
             
             # verify that the digit is not empty
             if digit is not None:
