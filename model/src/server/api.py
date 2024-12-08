@@ -1,4 +1,7 @@
 from flask import Flask, request, jsonify
+from utils.util import identify_image
+import numpy as np
+import cv2
 
 app = Flask(__name__)
 
@@ -19,6 +22,7 @@ def solve_image():
         # Save the uploaded image temporarily (or process it directly)
         image_file.save("uploaded_image.jpg")
         print(f"Image saved as: uploaded_image.jpg")
+    
 
         # Placeholder response
         response = {
@@ -45,10 +49,19 @@ def solve_image():
             },
             "filename": image_file.filename,
         }
+        
+        # Read the image directly from memory
+        
+        image = cv2.imread("uploaded_image.jpg")
 
-        # Use the model to make predictions
-        result = model.predict("uploaded_image.jpg")
-        print(result)
+        if image is None:
+            return jsonify({"error": "Could not process the image."}), 400
+
+        print("Finding puzzle...")
+        result = identify_image(model=model,image=image,debug=True)
+
+        print("Puzzle found!")
+        print("result: ",result)
 
         return jsonify(response), 200
 

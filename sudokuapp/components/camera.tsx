@@ -12,8 +12,7 @@ export default function Camera() {
   const [photoUri, setPhotoUri] = useState<string | null>(null); // State to store the photo URI
   const router = useRouter();
 
-  const serverURL =
-    "http://172.27.31.20:8080/";
+  const serverURL = "http://172.27.28.123:8080/";
   const dir = "/api/solve";
 
   if (!permission) {
@@ -112,16 +111,14 @@ export default function Camera() {
     <View style={styles.container}>
       <CameraView
         style={styles.camera}
-        facing={'back'}
+        facing={"back"}
         ref={cameraRef}
         autofocus="off"
       >
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <View style={styles.cameraButtonWrapper}>
-            </View>
-            <View style={styles.cameraButton}>
-            </View>
+            <View style={styles.cameraButtonWrapper}></View>
+            <View style={styles.cameraButton}></View>
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -181,6 +178,5 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     borderWidth: 2,
     borderColor: "white",
-  
   },
 });
