@@ -124,10 +124,13 @@ class sudokuNet:
         blurred = gray
 
         # Apply adaptive thresholding
-        thresh = cv2.adaptiveThreshold(blurred, 255,
+        if image_is_path:
+            thresh = cv2.adaptiveThreshold(blurred, 255,
                                     cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
                                     cv2.THRESH_BINARY, 11, 2)
-        image = cv2.bitwise_not(thresh)
+            image = cv2.bitwise_not(thresh)
+        else:
+            image = blurred
 
         # Normalize pixel values and expand dimensions for model input
         image = cv2.resize(image, (28, 28))
