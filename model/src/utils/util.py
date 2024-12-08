@@ -106,9 +106,9 @@ def extract_digit(cell, num:str ,debug=True):
     # if less than 3% of the mask is filled then we are looking at
     # noise and can safely ignore the contour
     #TODO Testing without the filter for the content of the squere 
-    # if percentFilled < 0.005:
-    #     print(f"Failed through the 0.5% check")
-    #     return None
+    if percentFilled < 0.005:
+        print(f"Failed through the 0.5% check")
+        return None
     
     # apply the mask to the thresholded cell
     digit = cv2.bitwise_and(thresh, thresh, mask=mask)
