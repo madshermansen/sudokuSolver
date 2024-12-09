@@ -23,33 +23,6 @@ def solve_image():
         image_file.save("uploaded_image.jpg")
         print(f"Image saved as: uploaded_image.jpg")
     
-
-        # Placeholder response
-        response = {
-            "message": "Image received successfully",
-            'data': {
-                'sudokuAnswer': [[1, 2, 3, 4, 5, 6, 7, 8, 9],
-                                 [4, 5, 6, 7, 8, 9, 1, 2, 3],
-                                 [7, 8, 9, 1, 2, 3, 4, 5, 6],
-                                 [2, 3, 4, 5, 6, 7, 8, 9, 1],
-                                 [5, 6, 7, 8, 9, 1, 2, 3, 4],
-                                 [8, 9, 1, 2, 3, 4, 5, 6, 7],
-                                 [3, 4, 5, 6, 7, 8, 9, 1, 2],
-                                 [6, 7, 8, 9, 1, 2, 3, 4, 5],
-                                 [9, 1, 2, 3, 4, 5, 6, 7, 8]],
-                'solvedByModel': [[0,0,1,0,1,1,0,0,0],
-                                 [0,0,1,0,0,0,0,0,0],
-                                 [0,0,1,0,0,0,0,0,0],
-                                 [0,0,0,0,1,0,0,0,0],
-                                 [1,0,0,0,0,1,0,0,0],
-                                 [1,0,0,0,0,0,0,0,1],
-                                 [0,0,0,0,1,0,1,1,0],
-                                 [0,0,0,1,0,0,0,0,0],
-                                 [0,0,1,0,0,0,0,0,0]],
-            },
-            "filename": image_file.filename,
-        }
-        
         # Read the image directly from memory
         
         image = cv2.imread("uploaded_image.jpg")
@@ -62,6 +35,23 @@ def solve_image():
 
         print("Puzzle found!")
         print("result: ",result)
+
+
+        grid = result
+
+        solved_by_model = create_solved_by_model_grid(grid)
+        solveSudoku(grid)
+
+        # Placeholder response
+        response = {
+            "message": "Image received successfully",
+            'data': {
+                'sudokuAnswer': grid,
+                'solvedByModel': solved_by_model,
+            },
+            "filename": image_file.filename,
+        }
+        
 
         return jsonify(response), 200
 
@@ -78,3 +68,48 @@ def run_server(model_instance=None):
         return
 
     app.run(debug=True, host='0.0.0.0', port=8080)
+
+
+def findNextCellToFill(grid, i, j):
+        for x in range(i,9):
+                for y in range(j,9):
+                        if grid[x][y] == 0:
+                                return x,y
+        for x in range(0,9):
+                for y in range(0,9):
+                        if grid[x][y] == 0:
+                                return x,y
+        return -1,-1
+
+def isValid(grid, i, j, e):
+        rowOk = all([e != grid[i][x] for x in range(9)])
+        if rowOk:
+                columnOk = all([e != grid[x][j] for x in range(9)])
+                if columnOk:
+                        # finding the top left x,y co-ordinates of the section containing the i,j cell
+                        secTopX, secTopY = 3 *(i//3), 3 *(j//3) #floored quotient should be used here. 
+                        for x in range(secTopX, secTopX+3):
+                                for y in range(secTopY, secTopY+3):
+                                        if grid[x][y] == e:
+                                                return False
+                        return True
+        return False
+
+def solveSudoku(grid, i=0, j=0):
+        i,j = findNextCellToFill(grid, i, j)
+        if i == -1:
+                return True
+        for e in range(1,10):
+                if isValid(grid,i,j,e):
+                        grid[i][j] = e
+                        if solveSudoku(grid, i, j):
+                                return True
+                        # Undo the current cell for backtracking
+                        grid[i][j] = 0
+        return False
+
+def create_solved_by_model_grid(grid):
+    solved_by_model = []
+    for row in grid:
+        solved_by_model.append([1 if x != 0 else 0 for x in row])
+    return solved_by_model
