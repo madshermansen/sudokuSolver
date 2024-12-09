@@ -42,8 +42,12 @@ def solve_image():
         puzzle = Sudoku(3, 3, board=grid)
         solved = True
         try:
-            puzzle.solve(raising=True)
+            puzzle.show_full()
+            print("Solving...")
+            solved_board = puzzle.solve()
+            print("Solved!")
         except:
+            print("Could not solve the puzzle.")
             solved = False
 
 
@@ -51,7 +55,7 @@ def solve_image():
         response = {
             "message": "Image received successfully",
             'data': {
-                'sudokuAnswer': puzzle.board,
+                'sudokuAnswer': solved_board.board,
                 'solvedByModel': solved_by_model,
                 'solved': solved
 
