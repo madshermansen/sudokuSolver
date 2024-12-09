@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from utils.util import identify_image
 import numpy as np
 import cv2
+from sudoku import Sudoku
 
 app = Flask(__name__)
 
@@ -23,33 +24,6 @@ def solve_image():
         image_file.save("uploaded_image.jpg")
         print(f"Image saved as: uploaded_image.jpg")
     
-
-        # Placeholder response
-        response = {
-            "message": "Image received successfully",
-            'data': {
-                'sudokuAnswer': [[1, 2, 3, 4, 5, 6, 7, 8, 9],
-                                 [4, 5, 6, 7, 8, 9, 1, 2, 3],
-                                 [7, 8, 9, 1, 2, 3, 4, 5, 6],
-                                 [2, 3, 4, 5, 6, 7, 8, 9, 1],
-                                 [5, 6, 7, 8, 9, 1, 2, 3, 4],
-                                 [8, 9, 1, 2, 3, 4, 5, 6, 7],
-                                 [3, 4, 5, 6, 7, 8, 9, 1, 2],
-                                 [6, 7, 8, 9, 1, 2, 3, 4, 5],
-                                 [9, 1, 2, 3, 4, 5, 6, 7, 8]],
-                'solvedByModel': [[0,0,1,0,1,1,0,0,0],
-                                 [0,0,1,0,0,0,0,0,0],
-                                 [0,0,1,0,0,0,0,0,0],
-                                 [0,0,0,0,1,0,0,0,0],
-                                 [1,0,0,0,0,1,0,0,0],
-                                 [1,0,0,0,0,0,0,0,1],
-                                 [0,0,0,0,1,0,1,1,0],
-                                 [0,0,0,1,0,0,0,0,0],
-                                 [0,0,1,0,0,0,0,0,0]],
-            },
-            "filename": image_file.filename,
-        }
-        
         # Read the image directly from memory
         
         image = cv2.imread("uploaded_image.jpg")
@@ -58,11 +32,39 @@ def solve_image():
             return jsonify({"error": "Could not process the image."}), 400
 
         print("Finding puzzle...")
-        result = identify_image(model=model,image=image,debug=True)
+        result = identify_image(model=model,image=image,debug=False)
 
         print("Puzzle found!")
         print("result: ",result)
 
+        grid = result.tolist()
+        solved_by_model = create_solved_by_model_grid(grid)
+        puzzle = Sudoku(3, 3, board=grid)
+        solved = True
+        try:
+            puzzle.show_full()
+            print("Solving...")
+            solved_board = puzzle.solve()
+            print("Solved!")
+        except:
+            print("Could not solve the puzzle.")
+            solved = False
+
+
+        # Placeholder response
+        response = {
+            "message": "Image received successfully",
+            'data': {
+                'sudokuAnswer': solved_board.board,
+                'solvedByModel': solved_by_model,
+                'solved': solved
+
+            },
+            "filename": image_file.filename,
+        }
+        
+
+        print('Sending response =======================>\n', response)
         return jsonify(response), 200
 
     except Exception as e:
@@ -78,3 +80,9 @@ def run_server(model_instance=None):
         return
 
     app.run(debug=True, host='0.0.0.0', port=8080)
+
+def create_solved_by_model_grid(grid):
+    solved_by_model = []
+    for row in grid:
+        solved_by_model.append([1 if x == 0 else 0 for x in row])
+    return solved_by_model
