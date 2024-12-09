@@ -41,10 +41,11 @@ def solve_image():
         solved_by_model = create_solved_by_model_grid(grid)
         puzzle = Sudoku(3, 3, board=grid)
         solved = True
+        solved_board = puzzle
         try:
             puzzle.show_full()
             print("Solving...")
-            solved_board = puzzle.solve()
+            solved_board = puzzle.solve(rasing=True)
             print("Solved!")
         except:
             print("Could not solve the puzzle.")

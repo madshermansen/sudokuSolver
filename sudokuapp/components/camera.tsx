@@ -1,6 +1,13 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useState } from "react";
-import { Alert, Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Button,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useRef } from "react";
 import { Image } from "react-native";
 import { useRouter } from "expo-router";
@@ -12,7 +19,7 @@ export default function Camera() {
   const [photoUri, setPhotoUri] = useState<string | null>(null); // State to store the photo URI
   const router = useRouter();
 
-  const serverURL = "http://172.27.31.20:8080/";
+  const serverURL = "http://172.20.10.9:8080/";
   const dir = "/api/solve";
 
   if (!permission) {
