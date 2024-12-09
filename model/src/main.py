@@ -5,12 +5,14 @@ import datetime
 
 def main():
     sudokuSolverModel = sudokuNet()
-    modelURL = '1118-150755-epochs50.keras'
+    modelURL = '1209-201103-epochs50.keras'
 
     sudokuSolverModel.load_model(f'output/model/{modelURL}')
 
-    # run server with model
+    # # run server with model
     run_server(sudokuSolverModel)
+    # train(sudokuSolverModel)
+    # sudokuSolverModel.evaluate()
 
 def test_predict(model):
     # loop through predict folder

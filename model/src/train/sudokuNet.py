@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 
-from utils.load_data import load_data
+from utils.load_data import load_data_with_computer_written
 import datetime
 import pickle
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ class sudokuNet:
     # Model related
     def __init__(self):
         # Load data
-        self.ds_train, self.ds_test, self.ds_info = load_data()
+        self.ds_train, self.ds_test, self.ds_info = load_data_with_computer_written()
         self.model = None
         self.file_path = 'output/'
 
@@ -69,7 +69,7 @@ class sudokuNet:
         )
 
         # Assuming you have the process_data function for loading data
-        ds_train, ds_test = self.process_data(batch_size)
+        # ds_train, ds_test = self.process_data(batch_size)
 
         # Define early stopping callback
         early_stopping = tf.keras.callbacks.EarlyStopping(
@@ -78,12 +78,14 @@ class sudokuNet:
             patience=epochs // 5,
             restore_best_weights=True,
         )
+        for images, labels in self.ds_train.take(1):
+            print(f"Images shape: {images.shape}, Labels shape: {labels.shape}")
 
         # Train the model
         self.model.fit(
-            ds_train,
+            self.ds_train,
             epochs=epochs,
-            validation_data=ds_test,
+            validation_data=self.ds_test,
             callbacks=[early_stopping]
         )
 
@@ -170,8 +172,8 @@ class sudokuNet:
             print("No model to evaluate!")
             return
         
-        ds_train, ds_test = self.process_data()
-        self.model.evaluate(ds_test)
+        # ds_train, ds_test = self.process_data()
+        self.model.evaluate(self.ds_test)
 
     # data helper functions 
     
