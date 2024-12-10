@@ -18,6 +18,9 @@ class sudokuNet:
     def __init__(self):
         # Load data
         self.ds_train, self.ds_test, self.ds_info = load_data_with_computer_written()
+
+        for i in self.ds_train.take(1):
+            print(f"The total number{i}")
         self.model = None
         self.file_path = 'output/'
 
@@ -58,6 +61,7 @@ class sudokuNet:
 
             # Head
             layers.Flatten(),
+            layers.Dense(units=512, activation="relu"),
             layers.Dropout(0.5),
             layers.Dense(units=10, activation="softmax"),
         ])
@@ -78,10 +82,9 @@ class sudokuNet:
             patience=epochs // 5,
             restore_best_weights=True,
         )
-        for images, labels in self.ds_train.take(1):
-            print(f"Images shape: {images.shape}, Labels shape: {labels.shape}")
 
         # Train the model
+        print(f"The total number{self.ds_train.shape}")
         self.model.fit(
             self.ds_train,
             epochs=epochs,
@@ -132,10 +135,13 @@ class sudokuNet:
                                     cv2.THRESH_BINARY, 11, 2)
             image = cv2.bitwise_not(thresh)
         else:
+            # thresh = cv2.adaptiveThreshold(blurred, 20,
+            #                         cv2.ADAPTIVE_THRESH_MEAN_C, 
+            #                         cv2.THRESH_BINARY, 67, 2)
             image = blurred
 
         # Normalize pixel values and expand dimensions for model input
-        image = cv2.resize(image, (28, 28))
+        image = cv2.resize(image, (28, 28), interpolation=cv2.INTER_AREA)
         image = self.normalize_img(np.array(image), 0)[0]
         image = np.expand_dims(image, axis=0)
 

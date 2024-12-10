@@ -1,3 +1,6 @@
+import tensorflow as tf
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 import tensorflow_datasets as tfds
 
 def load_data():
@@ -12,10 +15,6 @@ def load_data():
     print("Data loaded successfully!")
     return ds_train, ds_test, ds_info
 
-import tensorflow as tf
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-import os
 
 # Helper function to generate images of digits using fonts
 def generate_computer_written_digits(font_paths, image_size=(28, 28), num_per_digit=1000):
@@ -91,7 +90,6 @@ def load_data_with_computer_written():
 
     # Normalize and expand dimensions for MNIST
     def preprocess_mnist(image, label):
-        # image = tf.expand_dims(image, axis=-1)  # Add channel dimension
         image = tf.cast(image, tf.float32) / 255.0  # Normalize
         return image, label
 
@@ -105,7 +103,6 @@ def load_data_with_computer_written():
     ds_train_comp, ds_test_comp = load_computer_written_data()
 
     def preprocess_computer_written(image, label):
-        # Add channel dimension only if not already present
         if len(image.shape) != 3:  # Shape (28, 28, 1) is correct
             image = tf.expand_dims(image, axis=-1)
         image = tf.cast(image, tf.float32) / 255.0  # Normalize
@@ -114,9 +111,6 @@ def load_data_with_computer_written():
 
     ds_train_comp = ds_train_comp.map(preprocess_computer_written, num_parallel_calls=tf.data.AUTOTUNE)
     ds_test_comp = ds_test_comp.map(preprocess_computer_written, num_parallel_calls=tf.data.AUTOTUNE)
-    
-    for images, labels in ds_train_comp.take(1):
-        print(f"Images shape: {images.shape}, for datatallene Labels shape: {labels.shape}")
 
     # Combine MNIST and computer-written datasets
     ds_train = ds_train_mnist.concatenate(ds_train_comp)
