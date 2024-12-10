@@ -38,7 +38,7 @@ npm start
 
 # Usage
 
-The app is used to solve sudoku puzzles. The user can either take a picture of a sudoku puzzle or input the puzzle manually. The app will then solve the puzzle and display the solution to the user.
+The app is used to solve sudoku puzzles. The user can take a picture of a sudoku puzzle and upload it. The app will then solve the puzzle and display the solution to the user.
 
 Currently, the app only supports 9x9 sudoku puzzles. It is also fairly unstable so does not work as intended all the time.
 
