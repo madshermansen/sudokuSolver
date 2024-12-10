@@ -3,6 +3,7 @@
 Presentations are available in the following links:
 
 [November 13, 2024](/docs/nov13-presentation.pdf)
+
 [December 10, 2024](/docs/dec10-presentation.pdf)
 
 # Installation & Setup
